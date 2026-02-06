@@ -74,9 +74,22 @@ app.get('/api/users/:id', async (req, res) => {
   const cacheKey = `user:${id}`;
   try {
     const cached = await redis.hgetall(cacheKey);
-    if (Object.keys(cached).length > 0) return res.json(cached);
+    if (Object.keys(cached).length > 0) {
+      // 如果快取裡標記著這是個不存在的 ID (我們自定義一個欄位 _is_null)
+      if (cached._is_null === 'true') {
+        console.log('🛡️ 快取穿透防禦：攔截不存在的 ID');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      return res.json(cached);
+    }
     const result = await query('SELECT * FROM users WHERE id = $1', [id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    if (result.rows.length === 0) {
+      console.log('⚠️ DB 沒資料，存入空快取以防穿透');
+      await redis.hset(cacheKey, { _is_null: 'true' });
+      await redis.expire(cacheKey, 300); // 只存 5 分鐘
+      return res.status(404).json({ error: 'User not found' });
+    }
     const user = result.rows[0];
     const userToCache = {
       ...user,
@@ -115,10 +128,25 @@ app.get('/api/users/:id/posts', async (req, res) => {
 app.patch('/api/users/:id', async (req, res) => {
   const { id } = req.params;
   const { username, email } = req.body;
+  const cacheKey = `user:${id}`;
   try {
-    const sql = 'UPDATE users SET username = COALESCE($1, username), email = COALESCE($2, email) WHERE id = $3 RETURNING *';
+    const sql = `
+      UPDATE users 
+      SET username = COALESCE($1, username), 
+          email = COALESCE($2, email) 
+      WHERE id = $3 
+      RETURNING *`;
+
     const result = await query(sql, [username, email, id]);
-    await redis.del(`user:${id}`);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: '找不到該用戶' });
+    }
+    // --- 策略變更：直接刪除快取 ---
+    // 這樣可以保證下一次 GET 一定會去 DB 抓最新資料，避免併發造成的髒資料
+    await redis.del(cacheKey);
+    console.log(`🧹 Cache Aside: 已移除舊快取 ${cacheKey}`);
+
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Update failed' });

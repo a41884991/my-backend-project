@@ -33,6 +33,19 @@
           "201": { "description": "建立成功" }
         }
       }
+    },"/api/users/{id}/secure-update": {
+      "post": {
+        "summary": "安全更新 (分散式鎖實戰)",
+        "description": "模擬高併發場景，使用 Valkey SETNX 確保同一時間只有一個請求能處理該用戶資料",
+        "tags": ["Users"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "更新成功" },
+          "429": { "description": "系統忙碌中（鎖定失敗）" }
+        }
+      }
     },
     "/api/users/{id}": {
       "get": {

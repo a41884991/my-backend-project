@@ -2,7 +2,7 @@
 
 本專案是一個基於 Node.js 的後端系統，從基礎的 API 開發、資料庫管理，進階到快取優化、分散式系統與 Kubernetes 部署。
 
-## 技術棧
+## 技術
 
 * **Runtime**: Node.js (TypeScript)
 * **Framework**: Express 5.x
@@ -66,6 +66,17 @@ npm run dev
     Posts: 發布文章 (POST /api/posts)、取得使用者所有文章 (GET /api/users/:id/posts)。
 
     Debug: Hash 快取測試 (POST /api/debug/hash-user/:id)。
+
+## 專案結構
+```text
+src/
+├── routes/          # API 路由定義 (userRoutes.ts,postRoutes.ts)
+├── services/        # 業務邏輯服務 (lockService.ts)
+├── db.ts            # PostgreSQL 連線配置
+├── cache.ts         # Valkey 連線配置
+├── swagger.json     # OpenAPI 規格文件
+└── index.ts         # 伺服器啟動與路由掛載
+```
 
 ## 資料庫工具
 

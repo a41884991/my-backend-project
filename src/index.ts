@@ -43,18 +43,52 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
+/**
+ * 使用 Hash 儲存使用者 Session 或狀態
+ */
+app.post('/api/debug/hash-user/:id', async (req, res) => {
+  const { id } = req.params;
+  const { status, lastLogin } = req.body;
+  const key = `user:status:${id}`;
+
+  try {
+    // 使用 hset 儲存多個欄位
+    await redis.hset(key, {
+      status: status,
+      lastLogin: lastLogin,
+      updatedAt: new Date().toISOString()
+    });
+
+    // 設定過期時間 (Hash 也可以設定 TTL)
+    await redis.expire(key, 3600);
+
+    const fullData = await redis.hgetall(key);
+    res.json({ message: 'Hash 儲存成功', data: fullData });
+  } catch (err) {
+    res.status(500).json({ error: 'Valkey 操作失敗' });
+  }
+});
+
 app.get('/api/users/:id', async (req, res) => {
   const { id } = req.params;
   const cacheKey = `user:${id}`;
   try {
-    const cached = await redis.get(cacheKey);
-    if (cached) return res.json(JSON.parse(cached));
+    const cached = await redis.hgetall(cacheKey);
+    if (Object.keys(cached).length > 0) return res.json(cached);
     const result = await query('SELECT * FROM users WHERE id = $1', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
-    await redis.set(cacheKey, JSON.stringify(result.rows[0]), 'EX', 3600);
-    res.json(result.rows[0]);
+    const user = result.rows[0];
+    const userToCache = {
+      ...user,
+      created_at: user.created_at ? user.created_at.toISOString() : ''
+    };
+    await redis.hset(cacheKey, userToCache);
+    await redis.expire(cacheKey, 3600);
+
+    res.json(user);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('❌ 詳細錯誤資訊:', err);
+    res.status(500).json({ error: 'Server error', details: err instanceof Error ? err.message : err });
   }
 });
 

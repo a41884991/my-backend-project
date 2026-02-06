@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  title: Node.js Backend API
+  version: 1.0.0
+paths:
+  /api/users/{id}:
+    get:
+      summary: 透過 UUIDv7 獲取用戶
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  username: { type: string }

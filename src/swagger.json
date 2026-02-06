@@ -1,0 +1,112 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Backend API",
+    "version": "1.0.0",
+    "description": "Node.js 培訓計畫實戰 API - 獨立 JSON 配置版"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "paths": {
+    "/api/users": {
+      "post": {
+        "summary": "註冊新使用者",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "email": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "建立成功" }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "summary": "取得使用者資料",
+        "tags": ["Users"],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "成功" },
+          "404": { "description": "找不到使用者" }
+        }
+      },
+      "patch": {
+        "summary": "更新使用者",
+        "tags": ["Users"],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "email": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "更新成功" }
+        }
+      },
+      "delete": {
+        "summary": "刪除使用者",
+        "tags": ["Users"],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "204": { "description": "刪除成功" }
+        }
+      }
+    },
+    "/api/posts": {
+      "post": {
+        "summary": "發布新文章",
+        "tags": ["Posts"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": { "type": "string" },
+                  "title": { "type": "string" },
+                  "content": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "文章發布成功" }
+        }
+      }
+    },
+    "/api/users/{id}/posts": {
+      "get": {
+        "summary": "取得該使用者的所有文章 (JOIN 查詢)",
+        "tags": ["Posts"],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "成功返回使用者與文章列表" }
+        }
+      }
+    }
+  }
+}

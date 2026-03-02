@@ -36,8 +36,12 @@ router.get('/:id', async (req, res) => {
     }
     const user = result.rows[0];
     const userToCache = { ...user, created_at: user.created_at ? user.created_at.toISOString() : '' };
+
+    // 加上隨機偏移量，防止雪崩
+    const baseTTL = 3600;
+    const jitter = Math.floor(Math.random() * 600); // 隨機增加 0~10 分鐘
     await redis.hset(cacheKey, userToCache);
-    await redis.expire(cacheKey, 3600);
+    await redis.expire(cacheKey, baseTTL + jitter);
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });

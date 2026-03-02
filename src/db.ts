@@ -17,7 +17,7 @@ const pool = new Pool({
 
 // 核心修正：監聽錯誤，防止進程崩潰
 pool.on('error', (err) => {
-  console.error('❌ Unexpected error on idle client', err);
+  console.error('Unexpected error on idle client', err);
   process.exit(-1);
 });
 
@@ -26,7 +26,7 @@ export const testConnection = async () => {
   const client = await pool.connect();
   try {
     const res = await client.query('SELECT NOW()');
-    console.log('✅ 資料庫連線成功，伺服器時間：', res.rows[0].now);
+    console.log('資料庫連線成功，伺服器時間：', res.rows[0].now);
   } finally {
     client.release(); // 記得釋放連線回池子
   }

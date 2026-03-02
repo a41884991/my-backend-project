@@ -64,15 +64,22 @@ router.patch('/:id', async (req, res) => {
 router.post('/:id/secure-update', async (req, res) => {
   const { id } = req.params;
   const lockKey = `lock:user:${id}`;
-  const hasLock = await acquireLock(lockKey, 5);
 
-  if (!hasLock) return res.status(429).json({ error: '系統忙碌中，請稍後再試' });
+  // 1. 獲取鎖並拿到專屬 token
+  const lockToken = await acquireLock(lockKey, 5);
+
+  if (!lockToken) {
+    return res.status(429).json({ error: '系統忙碌中，請稍後再試' });
+  }
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 3000)); // 模擬耗時邏輯
+    console.log(`已取得鎖，Token: ${lockToken}`);
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 模擬業務
     res.json({ message: '安全更新成功' });
   } finally {
-    await releaseLock(lockKey);
+    // 2. 只有持正確 Token 的人才能釋放
+    const released = await releaseLock(lockKey, lockToken);
+    console.log(released ? `鎖已安全釋放` : `鎖已過期或被他人佔用，釋放失敗`);
   }
 });
 

@@ -57,7 +57,8 @@ npm run dev
     [x] Valkey Hash 數據型態應用 (HSET/HGETALL)
     [x] 快取穿透防禦：存儲空值標記避免無效請求直擊 DB
     [x] 一致性策略：實作 Cache-Aside (Invalidation) 模式
-    [ ] 分散式鎖實作 (規劃中)
+    [x] 基礎分散式鎖實作 
+    [x] **進階安全鎖**：實作隨機 Token 與 Lua 腳本原子化釋放鎖
 
 ## API 概覽
 

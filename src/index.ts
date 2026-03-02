@@ -17,6 +17,6 @@ app.use('/api/users', userRouter);
 app.use('/api/posts', postRouter);
 
 app.listen(PORT, '0.0.0.0', async () => {
-  console.log(`🚀 Server at http://localhost:${PORT}`);
+  console.log(`Server at http://localhost:${PORT}`);
   await testConnection();
 });

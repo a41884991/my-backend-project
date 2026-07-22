@@ -52,7 +52,7 @@ npm run dev
     [x] 資料庫索引優化 (Unique Index)
     [x] 資料備份與恢復腳本實作
 
-### Week 3: 快取進階與系統防護 (進行中)
+### Week 3: 快取進階與系統防護
 
     [x] Valkey Hash 數據型態應用 (HSET/HGETALL)
     [x] 快取穿透防禦：存儲空值標記避免無效請求直擊 DB
